@@ -16,7 +16,6 @@ export default function Chart({ DID, interval, startDate }: Props) {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading data</p>;
 
-  // Filter the dataset for the given device type
   const filteredData = data.data.filter((point: any) => {
     const pointDate = new Date(point.TMS * 1000);
     const start = new Date(startDate);
@@ -37,7 +36,7 @@ export default function Chart({ DID, interval, startDate }: Props) {
   });
 
   if (filteredData.length === 0) {
-    return <p>No data available for {DID} and the selected filters.</p>;
+    return <p>No data available for Device ID: {DID} and the selected filters.</p>;
   }
 
   const chartOptions = {

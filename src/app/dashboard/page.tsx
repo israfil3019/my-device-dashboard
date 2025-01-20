@@ -8,11 +8,8 @@ import Chart from './components/Chart';
 const queryClient = new QueryClient();
 
 export default function DashboardPage() {
-  const [deviceType, setDeviceType] = useState<string>('25_225');
   const [interval, setInterval] = useState<string>('daily');
-  const [startDate, setStartDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [startDate, setStartDate] = useState<string>('2024-12-31');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -22,8 +19,6 @@ export default function DashboardPage() {
         </header>
 
         <DeviceSelector
-          deviceType={deviceType}
-          setDeviceType={setDeviceType}
           interval={interval}
           setInterval={setInterval}
           startDate={startDate}
@@ -31,7 +26,11 @@ export default function DashboardPage() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Chart DID={deviceType} interval={interval} startDate={startDate} />
+          {/* Chart for Device 25_225 */}
+          <Chart DID="25_225" interval={interval} startDate={startDate} />
+
+          {/* Chart for Device 25_226 */}
+          <Chart DID="25_226" interval={interval} startDate={startDate} />
         </div>
       </div>
     </QueryClientProvider>
