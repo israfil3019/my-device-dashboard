@@ -3,18 +3,16 @@
 import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { useRouter } from 'next/navigation';
-import DeviceSelector from './components/DeviceSelector';
-import Chart from './components/Chart';
 import DataTable from './components/DataTable';
 import Tabs from './components/Tabs';
+import ChartPage from './components/ChartPage';
 
 const queryClient = new QueryClient();
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [interval, setInterval] = useState<string>('daily');
-  const [startDate, setStartDate] = useState<string>('2024-12-31');
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -25,20 +23,7 @@ export default function DashboardPage() {
   const tabs = [
     {
       label: 'Charts',
-      content: (
-        <>
-          <DeviceSelector
-            interval={interval}
-            setInterval={setInterval}
-            startDate={startDate}
-            setStartDate={setStartDate}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Chart DID="25_225" interval={interval} startDate={startDate} />
-            <Chart DID="25_226" interval={interval} startDate={startDate} />
-          </div>
-        </>
-      ),
+      content: <ChartPage />,
     },
     {
       label: 'AG Grid',

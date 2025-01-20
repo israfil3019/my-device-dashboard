@@ -16,7 +16,6 @@ export default function DataTable() {
       const response = await fetch('/mock/dataset.json');
       const data = await response.json();
 
-      // Filter the data based on the interval and start date
       const filteredData = data.data.filter((point: any) => {
         const pointDate = new Date(point.TMS * 1000);
         const start = new Date(startDate);
@@ -52,7 +51,7 @@ export default function DataTable() {
       headerName: 'Device ID',
       field: 'DID',
       sortable: true,
-      filter: 'agSetColumnFilter', // Allow filtering by Device ID
+      filter: false, 
     },
     { headerName: 'Temperature (°C)', field: 'tem1', sortable: true, filter: true },
     { headerName: 'Humidity (%)', field: 'hum1', sortable: true, filter: true },
@@ -63,7 +62,6 @@ export default function DataTable() {
 
   return (
     <div className="p-4">
-      {/* Filters Above the Table */}
       <div className="mb-4 flex gap-4 items-center">
         <div>
           <label className="block text-sm font-medium">Start Date</label>
@@ -87,8 +85,6 @@ export default function DataTable() {
           </select>
         </div>
       </div>
-
-      {/* AG Grid Table */}
       <div className="ag-theme-alpine" style={{ height: 600, width: '100%' }}>
         <AgGridReact
           rowData={rowData}
