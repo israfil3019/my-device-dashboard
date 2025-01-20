@@ -1,7 +1,12 @@
-import type { NextConfig } from "next";
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
-const nextConfig: NextConfig = {
-  /* config options here */
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://staging-api.arbolitics.com/:path*', // Proxy to API
+      },
+    ];
+  },
 };
-
-export default nextConfig;
