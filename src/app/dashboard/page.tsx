@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import DeviceSelector from './components/DeviceSelector';
 import Chart from './components/Chart';
 import DataTable from './components/DataTable';
+import Tabs from './components/Tabs';
 
 const queryClient = new QueryClient();
 
@@ -14,13 +15,36 @@ export default function DashboardPage() {
   const [interval, setInterval] = useState<string>('daily');
   const [startDate, setStartDate] = useState<string>('2024-12-31');
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('charts'); 
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     router.push('/login');
   };
+
+  const tabs = [
+    {
+      label: 'Charts',
+      content: (
+        <>
+          <DeviceSelector
+            interval={interval}
+            setInterval={setInterval}
+            startDate={startDate}
+            setStartDate={setStartDate}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Chart DID="25_225" interval={interval} startDate={startDate} />
+            <Chart DID="25_226" interval={interval} startDate={startDate} />
+          </div>
+        </>
+      ),
+    },
+    {
+      label: 'AG Grid',
+      content: <DataTable />,
+    },
+  ];
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -42,41 +66,8 @@ export default function DashboardPage() {
           </button>
         </header>
 
-        <div className="mb-6 flex gap-4">
-          <button
-            className={`px-4 py-2 rounded ${
-              activeTab === 'charts' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-            }`}
-            onClick={() => setActiveTab('charts')}
-          >
-            Charts
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${
-              activeTab === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-            }`}
-            onClick={() => setActiveTab('grid')}
-          >
-            AG Grid
-          </button>
-        </div>
-
-        {activeTab === 'charts' && (
-          <>
-            <DeviceSelector
-              interval={interval}
-              setInterval={setInterval}
-              startDate={startDate}
-              setStartDate={setStartDate}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Chart DID="25_225" interval={interval} startDate={startDate} />
-              <Chart DID="25_226" interval={interval} startDate={startDate} />
-            </div>
-          </>
-        )}
-
-        {activeTab === 'grid' && <DataTable />}
+        {/* Tabs */}
+        <Tabs tabs={tabs} />
       </div>
     </QueryClientProvider>
   );
