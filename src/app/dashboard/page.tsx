@@ -1,25 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { useRouter } from 'next/navigation';
-import DataTable from './components/DataTable';
 import Tabs from './components/Tabs';
-import ChartPage from './components/ChartPage';
+import DataTable from './components/DataTable';
+import ChartPage from './components/ChartPage'; 
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import { TabsProvider } from '@/context/TabsContext';
 
 const queryClient = new QueryClient();
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
-
   const tabs = [
     {
       label: 'Charts',
@@ -32,28 +23,17 @@ export default function DashboardPage() {
   ];
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gray-100 p-6">
-        <header className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Device Dashboard</h1>
-            {user && (
-              <p className="text-gray-600">
-                Logged in as: <strong>{user.name}</strong> ({user.email})
-              </p>
-            )}
+    <ProtectedRoute>
+      <QueryClientProvider client={queryClient}>
+        <TabsProvider>
+          <Navbar />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gray-50 pt-20">
+              <Tabs tabs={tabs} />
+            </div>
           </div>
-          <button
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </header>
-
-        {/* Tabs */}
-        <Tabs tabs={tabs} />
-      </div>
-    </QueryClientProvider>
+        </TabsProvider>
+      </QueryClientProvider>
+    </ProtectedRoute>
   );
 }
