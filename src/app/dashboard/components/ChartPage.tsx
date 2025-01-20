@@ -5,9 +5,11 @@ import ReactECharts from 'echarts-for-react';
 import DeviceTabs from './DeviceTabs';
 
 export default function ChartPage() {
-  const [activeTab, setActiveTab] = useState<string>('all'); // State for active device
+  const [activeTab, setActiveTab] = useState<string>('all'); 
   const [chartData, setChartData] = useState<any[]>([]);
-  const [compareMode, setCompareMode] = useState<boolean>(false); // Toggle comparison mode
+  const [compareMode, setCompareMode] = useState<boolean>(false);
+  const [startDate, setStartDate] = useState<string>('2024-12-31');
+  const [interval, setInterval] = useState<string>('daily');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,12 +17,35 @@ export default function ChartPage() {
       const data = await response.json();
       setChartData(data.data);
     };
-
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (activeTab !== 'all') {
+      setCompareMode(false);
+    }
+  }, [activeTab]);
+
   const getFilteredData = (deviceId: string) => {
-    return chartData.filter((point: any) => point.DID === deviceId);
+    const start = new Date(startDate);
+    return chartData.filter((point: any) => {
+      const pointDate = new Date(point.TMS * 1000);
+
+      let isInInterval = false;
+      if (interval === 'daily') {
+        isInInterval = pointDate.toDateString() === start.toDateString();
+      } else if (interval === 'weekly') {
+        const diff = (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        isInInterval = diff >= 0 && diff < 7;
+      } else if (interval === 'monthly') {
+        const diff = (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        isInInterval = diff >= 0 && diff < 30;
+      }
+
+      const isDeviceMatch = deviceId === 'all' || point.DID === deviceId;
+
+      return isInInterval && isDeviceMatch;
+    });
   };
 
   const getChartOptions = (data: any[], deviceId?: string) => {
@@ -39,11 +64,31 @@ export default function ChartPage() {
           name: `${deviceId || 'All'} Temperature`,
           type: 'line',
           data: data.map((point: any) => point.tem1),
+          markLine: {
+            data: [
+              { type: 'min', name: 'Min Temperature' },
+              { type: 'max', name: 'Max Temperature' },
+            ],
+            label: {
+              show: true,
+              formatter: '{b}: {c}',
+            },
+          },
         },
         {
           name: `${deviceId || 'All'} Humidity`,
           type: 'line',
           data: data.map((point: any) => point.hum1),
+          markLine: {
+            data: [
+              { type: 'min', name: 'Min Humidity' },
+              { type: 'max', name: 'Max Humidity' },
+            ],
+            label: {
+              show: true,
+              formatter: '{b}: {c}',
+            },
+          },
         },
       ],
     };
@@ -55,7 +100,14 @@ export default function ChartPage() {
 
     return {
       tooltip: { trigger: 'axis' },
-      legend: { data: ['25_225 Temperature', '25_225 Humidity', '25_226 Temperature', '25_226 Humidity'] },
+      legend: {
+        data: [
+          '25_225 Temperature',
+          '25_225 Humidity',
+          '25_226 Temperature',
+          '25_226 Humidity',
+        ],
+      },
       xAxis: {
         type: 'category',
         data: chartData.map((point: any) =>
@@ -90,13 +142,11 @@ export default function ChartPage() {
 
   return (
     <div className="p-4">
-      {/* Device Tabs and Compare Button */}
       <div className="flex items-center gap-4 mb-4">
         <DeviceTabs
           activeTab={activeTab}
           setActiveTab={(tab) => {
             setActiveTab(tab);
-            setCompareMode(false); // Disable compare mode when switching tabs
           }}
           devices={['all', '25_225', '25_226']}
         />
@@ -105,9 +155,31 @@ export default function ChartPage() {
           className={`px-4 py-2 rounded ${
             compareMode ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'
           }`}
+          disabled={activeTab !== 'all'}
         >
           Compare Devices
         </button>
+        <div>
+          <label className="block text-sm font-medium">Start Date</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Interval</label>
+          <select
+            value={interval}
+            onChange={(e) => setInterval(e.target.value)}
+            className="p-2 border rounded"
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
       </div>
 
       <div
@@ -118,7 +190,6 @@ export default function ChartPage() {
         }`}
       >
         {compareMode ? (
-          // Combined Chart
           <div className="p-4 bg-white shadow rounded">
             <ReactECharts
               option={getCombinedChartOptions()}
@@ -127,15 +198,12 @@ export default function ChartPage() {
           </div>
         ) : activeTab === 'all' ? (
           <>
-            {/* Chart for Device 25_225 */}
             <div className="p-4 bg-white shadow rounded">
               <ReactECharts
                 option={getChartOptions(getFilteredData('25_225'), '25_225')}
                 style={{ height: '400px', width: '100%' }}
               />
             </div>
-
-            {/* Chart for Device 25_226 */}
             <div className="p-4 bg-white shadow rounded">
               <ReactECharts
                 option={getChartOptions(getFilteredData('25_226'), '25_226')}
@@ -144,13 +212,9 @@ export default function ChartPage() {
             </div>
           </>
         ) : (
-          // Single Chart for Selected Device
           <div className="p-4 bg-white shadow rounded">
             <ReactECharts
-              option={getChartOptions(
-                chartData.filter((point: any) => point.DID === activeTab),
-                activeTab
-              )}
+              option={getChartOptions(getFilteredData(activeTab), activeTab)}
               style={{ height: '400px', width: '100%' }}
             />
           </div>
