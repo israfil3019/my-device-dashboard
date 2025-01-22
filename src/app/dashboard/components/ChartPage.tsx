@@ -9,7 +9,7 @@ import { useTabsContext } from "@/context/TabsContext";
 export default function ChartPage() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [compareMode, setCompareMode] = useState<boolean>(false);
-  const { activeTab, setActiveTab, interval, setInterval } = useTabsContext();
+  const { activeTab, interval, setInterval } = useTabsContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +47,6 @@ export default function ChartPage() {
   if (error) return <p className="text-red-500">{error}</p>;
 
   const getFilteredData = (deviceId: string) => {
-    console.log("deviceId", deviceId);
     return chartData.filter((point: any) => {
       const isDeviceMatch = deviceId === "all" || point.DID === deviceId;
       return isDeviceMatch;
@@ -202,11 +201,14 @@ export default function ChartPage() {
     <div className="p-4">
       <Filters interval={interval} setInterval={setInterval} />
 
-      <div className="flex items-center gap-4 mb-4">
-        <DeviceTabs devices={["all", "25_225", "25_226"]} />
+      <div className="flex items-center justify-center gap-4 mb-4">
+        <DeviceTabs
+          devices={["all", "25_225", "25_226"]}
+          setCompareMode={setCompareMode}
+        />
         <div className="mb-4 flex gap-4">
           <button
-            onClick={() => setCompareMode(true)}
+            onClick={() => setCompareMode(!compareMode)}
             className={`px-4 py-2 rounded ${
               compareMode
                 ? "bg-blue-600 text-white"

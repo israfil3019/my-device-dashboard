@@ -12,7 +12,7 @@ import { useTabsContext } from "@/context/TabsContext";
 export default function DataTable() {
   const [rawData, setRawData] = useState<any[]>([]);
   const [rowData, setRowData] = useState<any[]>([]);
-  const { activeTab, setActiveTab, interval, setInterval } = useTabsContext();
+  const { activeTab, interval, setInterval } = useTabsContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +30,6 @@ export default function DataTable() {
         console.error("Error fetching data:", err);
       }
     };
-
     fetchData();
   }, []);
 
@@ -101,9 +100,10 @@ export default function DataTable() {
   return (
     <div className="p-4">
       <Filters interval={interval} setInterval={setInterval} />
-
-      <DeviceTabs devices={["all", "25_225", "25_226"]} />
-
+      <DeviceTabs
+        devices={["all", "25_225", "25_226"]}
+        setCompareMode={() => {}}
+      />
       <div
         className="ag-theme-alpine mt-4"
         style={{ height: 600, width: "100%" }}
