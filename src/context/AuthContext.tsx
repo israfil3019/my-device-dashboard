@@ -12,6 +12,8 @@ interface User {
   name: string;
   companyName: string;
   email: string;
+  role: string;
+  accessToken: string;
 }
 
 interface AuthContextType {

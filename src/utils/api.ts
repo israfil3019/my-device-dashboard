@@ -15,4 +15,12 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+apiClient.interceptors.request.use((config) => {
+  if (config.method === "get" && config.data) {
+    config.url = `${config.url}?${new URLSearchParams(config.data).toString()}`;
+    delete config.data;
+  }
+  return config;
+});
+
 export default apiClient;
