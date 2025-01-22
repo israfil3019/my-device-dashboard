@@ -1,42 +1,31 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface FiltersProps {
-  startDate: string;
-  setStartDate: (value: string) => void;
   interval: string;
   setInterval: (value: string) => void;
 }
 
-export default function Filters({
-  startDate,
-  setStartDate,
-  interval,
-  setInterval,
-}: FiltersProps) {
+export default function Filters({ interval, setInterval }: FiltersProps) {
+  const intervals = ["daily", "weekly", "monthly"]; // Define intervals
+
   return (
-    <div className="flex items-center gap-4 mb-4">
-      <div>
-        <label className="block text-sm font-medium">Start Date</label>
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="p-2 border rounded"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium">Interval</label>
-        <select
-          value={interval}
-          onChange={(e) => setInterval(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
+    <div className="mb-4">
+      <div className="flex justify-center gap-4">
+        {intervals.map((value) => (
+          <button
+            key={value}
+            onClick={() => setInterval(value)}
+            className={`px-4 py-2 rounded ${
+              interval === value
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
+            {value.charAt(0).toUpperCase() + value.slice(1)}
+          </button>
+        ))}
       </div>
     </div>
   );
