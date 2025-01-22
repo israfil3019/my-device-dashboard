@@ -12,45 +12,49 @@ import { useTabsContext } from "@/context/TabsContext";
 export default function DataTable() {
   const [rawData, setRawData] = useState<any[]>([]);
   const [rowData, setRowData] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const { startDate, setStartDate, interval, setInterval } = useTabsContext();
+  const { activeTab, setActiveTab, interval, setInterval } = useTabsContext();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("/mock/dataset.json");
-      const data = await response.json();
-      setRawData(data.data);
+      try {
+        setIsLoading(true);
+        const response = await fetch("/mock/dataset.json");
+        const data = await response.json();
+        setRawData(data.data);
+        setIsLoading(false);
+      } catch (err) {
+        setError("Failed to load mock data");
+        setIsLoading(false);
+        console.error("Error fetching data:", err);
+      }
     };
 
     fetchData();
   }, []);
 
   useEffect(() => {
-    const start = new Date(startDate);
+    if (rawData.length === 0) return;
 
-    const filteredData = rawData.filter((point: any) => {
-      const pointDate = new Date(point.TMS * 1000);
+    let rowsToFetch = 0;
+    if (interval === "daily") {
+      rowsToFetch = 4;
+    } else if (interval === "weekly") {
+      rowsToFetch = 7 * 4;
+    } else if (interval === "monthly") {
+      rowsToFetch = 4 * 7 * 4;
+    }
 
-      let isInInterval = false;
-      if (interval === "daily") {
-        isInInterval = pointDate.toDateString() === start.toDateString();
-      } else if (interval === "weekly") {
-        const diff =
-          (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        isInInterval = diff >= 0 && diff < 7;
-      } else if (interval === "monthly") {
-        const diff =
-          (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        isInInterval = diff >= 0 && diff < 30;
-      }
-
-      const isDeviceMatch = activeTab === "all" || point.DID === activeTab;
-
-      return isInInterval && isDeviceMatch;
-    });
+    const filteredData = rawData
+      .slice(0, rowsToFetch)
+      .filter((point: any) => activeTab === "all" || point.DID === activeTab);
 
     setRowData(filteredData);
-  }, [rawData, startDate, interval, activeTab]);
+  }, [rawData, interval, activeTab]);
+
+  if (isLoading) return <p>Loading table data...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   const columnDefs = [
     {
@@ -66,6 +70,7 @@ export default function DataTable() {
       field: "DID",
       sortable: true,
       filter: false,
+      width: 150,
     },
     {
       headerName: "Temperature (°C)",
@@ -73,16 +78,15 @@ export default function DataTable() {
       sortable: true,
       filter: true,
     },
-    { headerName: "Humidity (%)", field: "hum1", sortable: true, filter: true },
     {
-      headerName: "Solar Radiation",
-      field: "solr",
+      headerName: "Humidity (%)",
+      field: "hum1",
       sortable: true,
       filter: true,
     },
     {
-      headerName: "Precipitation (mm)",
-      field: "prec",
+      headerName: "Solar Radiation",
+      field: "solr",
       sortable: true,
       filter: true,
     },
@@ -96,18 +100,9 @@ export default function DataTable() {
 
   return (
     <div className="p-4">
-      <Filters
-        startDate={startDate}
-        setStartDate={setStartDate}
-        interval={interval}
-        setInterval={setInterval}
-      />
+      <Filters interval={interval} setInterval={setInterval} />
 
-      <DeviceTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        devices={["all", "25_225", "25_226"]}
-      />
+      <DeviceTabs devices={["all", "25_225", "25_226"]} />
 
       <div
         className="ag-theme-alpine mt-4"

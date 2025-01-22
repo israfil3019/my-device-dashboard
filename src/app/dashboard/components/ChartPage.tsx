@@ -7,89 +7,106 @@ import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
 
 export default function ChartPage() {
-  const [activeTab, setActiveTab] = useState<string>("all");
   const [chartData, setChartData] = useState<any[]>([]);
   const [compareMode, setCompareMode] = useState<boolean>(false);
-  const { startDate, setStartDate, interval, setInterval } = useTabsContext();
+  const { activeTab, setActiveTab, interval, setInterval } = useTabsContext();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("/mock/dataset.json");
-      const data = await response.json();
-      setChartData(data.data);
+    const fetchMockData = async () => {
+      try {
+        setIsLoading(true);
+
+        const response = await fetch("/mock/dataset.json");
+        const jsonResponse = await response.json();
+
+        const mockData = jsonResponse.data;
+        let rowsToFetch = 0;
+        if (interval === "daily") {
+          rowsToFetch = 4;
+        } else if (interval === "weekly") {
+          rowsToFetch = 7 * 4;
+        } else if (interval === "monthly") {
+          rowsToFetch = 4 * 7 * 4;
+        }
+        const filteredData = mockData.slice(0, rowsToFetch);
+        setChartData(filteredData);
+      } catch (err) {
+        setError("Failed to load mock data");
+        console.error("Error loading mock data:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchData();
-  }, []);
+    fetchMockData();
+  }, [activeTab, interval]);
+
+  if (isLoading) return <p>Loading chart data...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   const getFilteredData = (deviceId: string) => {
-    const start = new Date(startDate);
+    console.log("deviceId", deviceId);
     return chartData.filter((point: any) => {
-      const pointDate = new Date(point.TMS * 1000);
-
-      let isInInterval = false;
-      if (interval === "daily") {
-        isInInterval = pointDate.toDateString() === start.toDateString();
-      } else if (interval === "weekly") {
-        const diff =
-          (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        isInInterval = diff >= 0 && diff < 7;
-      } else if (interval === "monthly") {
-        const diff =
-          (pointDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        isInInterval = diff >= 0 && diff < 30;
-      }
-
       const isDeviceMatch = deviceId === "all" || point.DID === deviceId;
-
-      return isInInterval && isDeviceMatch;
+      return isDeviceMatch;
     });
   };
 
-  const getChartOptions = (data: any[], deviceId?: string) => ({
-    tooltip: { trigger: "axis" },
-    legend: { data: ["Temperature", "Humidity"] },
-    xAxis: {
-      type: "category",
-      data: data.map((point: any) =>
-        new Date(point.TMS * 1000).toLocaleString()
-      ),
-    },
-    yAxis: { type: "value" },
-    series: [
-      {
-        name: `${deviceId || "All"} Temperature`,
-        type: "line",
-        data: data.map((point: any) => point.tem1),
-        markPoint: {
-          data: [
-            { type: "max", name: "Max" },
-            { type: "min", name: "Min" },
-          ],
-          label: {
-            show: true,
-            // formatter: '{b}: {c}',
-            formatter: "{c}",
+  const getChartOptions = (data: any[], deviceId?: string) => {
+    const sortedData = data.sort((a: any, b: any) => a.TMS - b.TMS);
+
+    const groupedData = sortedData.reduce((acc: any, point: any) => {
+      const pointDate = new Date(point.TMS * 1000);
+      const formattedDate = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+      }).format(pointDate);
+
+      if (!acc[formattedDate]) {
+        acc[formattedDate] = { tem1: point.tem1, hum1: point.hum1 };
+      }
+      return acc;
+    }, {});
+
+    const xAxisData = Object.keys(groupedData);
+    const temperatureData = Object.values(groupedData).map((d: any) => d.tem1);
+    const humidityData = Object.values(groupedData).map((d: any) => d.hum1);
+
+    return {
+      tooltip: { trigger: "axis" },
+      legend: { data: ["Temperature", "Humidity"] },
+      xAxis: {
+        type: "category",
+        data: xAxisData,
+      },
+      yAxis: { type: "value" },
+      series: [
+        {
+          name: `${deviceId || "All"} Temperature`,
+          type: "line",
+          data: temperatureData,
+          markPoint: {
+            data: [
+              { type: "max", name: "Max" },
+              { type: "min", name: "Min" },
+            ],
+            label: {
+              show: true,
+              formatter: "{c}",
+            },
           },
         },
-      },
-      {
-        name: `${deviceId || "All"} Humidity`,
-        type: "line",
-        data: data.map((point: any) => point.hum1),
-        markPoint: {
-          data: [
-            { type: "max", name: "Max" },
-            { type: "min", name: "Min" },
-          ],
-          label: {
-            show: true,
-            formatter: "{c}",
-          },
+        {
+          name: `${deviceId || "All"} Humidity`,
+          type: "line",
+          data: humidityData,
         },
-      },
-    ],
-  });
+      ],
+    };
+  };
 
   const getCombinedChartOptions = () => {
     const allTimestamps = [
@@ -160,12 +177,6 @@ export default function ChartPage() {
           name: "25_225 Humidity",
           type: "line",
           data: humidity225,
-          markPoint: {
-            data: [
-              { type: "max", name: "Max Humidity" },
-              { type: "min", name: "Min Humidity" },
-            ],
-          },
         },
         {
           name: "25_226 Temperature",
@@ -182,12 +193,6 @@ export default function ChartPage() {
           name: "25_226 Humidity",
           type: "line",
           data: humidity226,
-          markPoint: {
-            data: [
-              { type: "max", name: "Max Humidity" },
-              { type: "min", name: "Min Humidity" },
-            ],
-          },
         },
       ],
     };
@@ -195,22 +200,10 @@ export default function ChartPage() {
 
   return (
     <div className="p-4">
-      <Filters
-        startDate={startDate}
-        setStartDate={setStartDate}
-        interval={interval}
-        setInterval={setInterval}
-      />
+      <Filters interval={interval} setInterval={setInterval} />
 
       <div className="flex items-center gap-4 mb-4">
-        <DeviceTabs
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-            setCompareMode(false);
-          }}
-          devices={["all", "25_225", "25_226"]}
-        />
+        <DeviceTabs devices={["all", "25_225", "25_226"]} />
         <div className="mb-4 flex gap-4">
           <button
             onClick={() => setCompareMode(true)}
