@@ -1,17 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const api = axios.create({
-  baseURL: '/mock', // Need replacement with the real one
+const apiClient = axios.create({
+  baseURL: "/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-export const fetchData = async (locationId: number, limit: number) => {
-  const response = await api.get('/dataset.json', {
-    params: { location_id: locationId, limit },
-  });
-  return response.data;
-};
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-export default api;
+export default apiClient;
