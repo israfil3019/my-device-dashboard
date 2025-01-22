@@ -5,6 +5,7 @@ import ReactECharts from "echarts-for-react";
 import DeviceTabs from "./DeviceTabs";
 import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
+import Spinner from "@/app/loading/Spinner";
 
 export default function ChartPage() {
   const [chartData, setChartData] = useState<any[]>([]);
@@ -43,7 +44,6 @@ export default function ChartPage() {
     fetchMockData();
   }, [activeTab, interval]);
 
-  if (isLoading) return <p>Loading chart data...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   const getFilteredData = (deviceId: string) => {
@@ -219,8 +219,11 @@ export default function ChartPage() {
           </button>
         </div>
       </div>
-
-      {compareMode ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64 col-span-full">
+          <Spinner />
+        </div>
+      ) : compareMode ? (
         <div className="p-4 bg-white shadow rounded">
           <ReactECharts
             option={getCombinedChartOptions()}

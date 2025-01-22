@@ -8,6 +8,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import DeviceTabs from "./DeviceTabs";
 import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
+import Spinner from "@/app/loading/Spinner";
 
 export default function DataTable() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -108,14 +109,20 @@ export default function DataTable() {
         className="ag-theme-alpine mt-4"
         style={{ height: 600, width: "100%" }}
       >
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={columnDefs}
-          defaultColDef={{
-            sortable: true,
-            filter: true,
-          }}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <Spinner />
+          </div>
+        ) : (
+          <AgGridReact
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={{
+              sortable: true,
+              filter: true,
+            }}
+          />
+        )}
       </div>
     </div>
   );

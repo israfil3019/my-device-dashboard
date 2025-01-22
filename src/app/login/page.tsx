@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useAuth } from "@/context/AuthContext";
+import apiClient from "@/utils/api";
 
 interface LoginFormInputs {
   email: string;
@@ -13,46 +14,58 @@ interface LoginFormInputs {
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
   const { register, handleSubmit } = useForm<LoginFormInputs>();
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [router]);
 
   const onSubmit = async (data: LoginFormInputs) => {
+    setIsLoading(true);
     try {
-      // Fetch users from users.json
-      const response = await fetch('/mock/users.json');
-      const users = await response.json();
+      const response = await apiClient.post("/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
 
-      const user = users.find(
-        (u: { email: string; password: string }) =>
-          u.email === data.email && u.password === data.password,
-      );
-
-      if (user) {
-        login({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        });
-
-        localStorage.setItem('token', user.accessToken);
-        router.push('/dashboard');
-      } else {
-        setError('Invalid email or password.');
+      if (![200, 201].includes(response.status)) {
+        throw new Error("Invalid credentials");
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+      const { name, email, role, accessToken, company } = response.data.data;
+      localStorage.setItem("token", accessToken);
+      login({
+        name,
+        email,
+        role,
+        companyName: company?.name || "Device Dashboard",
+        accessToken,
+      });
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      setError(
+        err.response?.data?.message || "An error occurred. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {isLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+          <div className="text-white text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-lg">Logging in, please wait...</p>
+          </div>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-6 rounded shadow-md max-w-sm w-full"
@@ -62,7 +75,7 @@ export default function LoginPage() {
         <div className="mb-4">
           <label className="block text-sm font-medium">Email</label>
           <input
-            {...register('email', { required: 'Email is required' })}
+            {...register("email", { required: "Email is required" })}
             type="email"
             className="w-full p-2 border rounded"
             placeholder="Enter your email"
@@ -71,7 +84,7 @@ export default function LoginPage() {
         <div className="mb-4">
           <label className="block text-sm font-medium">Password</label>
           <input
-            {...register('password', { required: 'Password is required' })}
+            {...register("password", { required: "Password is required" })}
             type="password"
             className="w-full p-2 border rounded"
             placeholder="Enter your password"
