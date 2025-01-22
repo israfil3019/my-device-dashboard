@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useTabsContext } from "@/context/TabsContext";
+import React, { useState } from "react";
 
 interface Tab {
   label: string;
@@ -12,25 +11,29 @@ interface TabsProps {
 }
 
 export default function Tabs({ tabs }: TabsProps) {
-  const { activeTab, setActiveTab } = useTabsContext();
+  const [localActiveTab, setLocalActiveTab] = useState<string>(tabs[0]?.label); // Local state for tabs
 
   return (
     <div>
+      {/* Tab Buttons */}
       <div className="flex justify-center gap-4 mb-6 px-4">
         {tabs.map((tab, index) => (
           <button
             key={index}
             className={`px-4 py-2 rounded w-full text-2xl ${
-              activeTab === tab.label ? "bg-blue-500 text-white" : "bg-gray-200"
+              localActiveTab === tab.label
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200"
             }`}
-            onClick={() => setActiveTab(tab.label)}
+            onClick={() => setLocalActiveTab(tab.label)}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div>{tabs.find((tab) => tab.label === activeTab)?.content}</div>
+      {/* Active Tab Content */}
+      <div>{tabs.find((tab) => tab.label === localActiveTab)?.content}</div>
     </div>
   );
 }
