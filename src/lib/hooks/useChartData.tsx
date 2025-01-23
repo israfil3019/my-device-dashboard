@@ -1,28 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-
-type ChartData = {
-  TMS: number;
-  DID: string;
-  tem1: number;
-  hum1: number;
-};
+import { ChartData } from "../types/chart.types";
 
 type FetchChartParams = {
   interval: string;
-  activeTab: string;
 };
-const token = localStorage.getItem("token");
+
 const fetchChartData = async (
   params: FetchChartParams
 ): Promise<ChartData[]> => {
-  // Define a default fallback for rowsToFetch
+  const token = localStorage.getItem("token");
+
+  // Map intervals to fetch limits
   const limitMap: { [key: string]: number } = {
     daily: 48,
     weekly: 336,
     monthly: 1344,
   };
 
-  // Use a fallback in case `interval` does not match predefined keys
   const rowsToFetch = limitMap[params.interval] || 48;
 
   const response = await fetch("/api/proxy/data", {
@@ -42,18 +36,16 @@ const fetchChartData = async (
   }
 
   const data = await response.json();
-
-  // Filter data based on activeTab
-  return data.data.filter((point: ChartData) => {
-    return params.activeTab === "all" || point.DID === params.activeTab;
-  });
+  return data.data;
 };
 
-export const useChartData = (interval: string, activeTab: string) => {
+export const useChartData = (interval: string) => {
   return useQuery<ChartData[], Error>({
-    queryKey: ["chartData", interval, activeTab],
-    queryFn: () => fetchChartData({ interval, activeTab }),
-    refetchOnWindowFocus: false, // Prevent refetching when window is focused
+    queryKey: ["chartData", interval],
+    queryFn: () => fetchChartData({ interval }),
+    enabled: !!interval, // Fetch only when interval is defined
+    staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
+    refetchOnWindowFocus: false, // Disable refetching on window focus
     retry: 1, // Retry once on failure
   });
 };
