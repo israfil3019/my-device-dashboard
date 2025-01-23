@@ -1,66 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ValueFormatterParams } from "ag-grid-community";
+import { ColDef, ValueFormatterParams } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import DeviceTabs from "./DeviceTabs";
 import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
+import { useChartData } from "@/lib/hooks/useChartData";
+import { ChartData } from "@/lib/types/chart.types";
 
 export default function DataTable() {
-  const [rawData, setRawData] = useState<any[]>([]);
-  const [rowData, setRowData] = useState<any[]>([]);
   const { activeTab, interval, setInterval } = useTabsContext();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/mock/dataset.json");
-        const data = await response.json();
-        setRawData(data.data);
-        setIsLoading(false);
-      } catch (err) {
-        setError("Failed to load mock data");
-        setIsLoading(false);
-        console.error("Error fetching data:", err);
-      }
-    };
-    fetchData();
-  }, []);
+  const { data: rawData = [], isLoading, isError } = useChartData(interval);
 
-  useEffect(() => {
-    if (rawData.length === 0) return;
+  const rowData = rawData.filter(
+    (point) => activeTab === "all" || point.DID === activeTab
+  );
 
-    let rowsToFetch = 0;
-    if (interval === "daily") {
-      rowsToFetch = 4;
-    } else if (interval === "weekly") {
-      rowsToFetch = 7 * 4;
-    } else if (interval === "monthly") {
-      rowsToFetch = 4 * 7 * 4;
-    }
+  if (isError) {
+    return (
+      <div className="text-red-500 p-4 bg-white shadow rounded">
+        <h2 className="text-lg font-semibold">Error</h2>
+        <p>Failed to load table data. Please try again later.</p>
+      </div>
+    );
+  }
 
-    const filteredData = rawData
-      .slice(0, rowsToFetch)
-      .filter((point: any) => activeTab === "all" || point.DID === activeTab);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner />
+      </div>
+    );
+  }
 
-    setRowData(filteredData);
-  }, [rawData, interval, activeTab]);
-
-  if (isLoading) return <p>Loading table data...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-
-  const columnDefs = [
+  const columnDefs: ColDef<ChartData>[] = [
     {
       headerName: "Date & Time",
       field: "TMS",
-      valueFormatter: (params: ValueFormatterParams) =>
+      valueFormatter: (params: ValueFormatterParams<ChartData>) =>
         new Date(params.value * 1000).toLocaleString(),
       sortable: true,
       filter: "agDateColumnFilter",
@@ -109,20 +90,14 @@ export default function DataTable() {
         className="ag-theme-alpine mt-4"
         style={{ height: 600, width: "100%" }}
       >
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <Spinner />
-          </div>
-        ) : (
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={columnDefs}
-            defaultColDef={{
-              sortable: true,
-              filter: true,
-            }}
-          />
-        )}
+        <AgGridReact<ChartData>
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={{
+            sortable: true,
+            filter: true,
+          }}
+        />
       </div>
     </div>
   );
