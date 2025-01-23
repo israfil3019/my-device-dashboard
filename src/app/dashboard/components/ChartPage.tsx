@@ -1,50 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import DeviceTabs from "./DeviceTabs";
 import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
+import { useChartData } from "@/lib/hooks/useChartData";
+import { useEffect, useState } from "react";
 
 export default function ChartPage() {
-  const [chartData, setChartData] = useState<any[]>([]);
   const [compareMode, setCompareMode] = useState<boolean>(false);
   const { activeTab, interval, setInterval } = useTabsContext();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchMockData = async () => {
-      try {
-        setIsLoading(true);
+  const {
+    data: chartData = [],
+    isLoading,
+    isError,
+  } = useChartData(interval, activeTab);
 
-        const response = await fetch("/mock/dataset.json");
-        const jsonResponse = await response.json();
+  if (isError) {
+    return (
+      <div className="text-red-500 p-4 bg-white shadow rounded">
+        <h2 className="text-lg font-semibold">Error</h2>
+        <p>Failed to load chart data. Please try again later.</p>
+        <p className="text-sm">
+          Make sure your server is running and accessible.
+        </p>
+      </div>
+    );
+  }
 
-        const mockData = jsonResponse.data;
-        let rowsToFetch = 0;
-        if (interval === "daily") {
-          rowsToFetch = 4;
-        } else if (interval === "weekly") {
-          rowsToFetch = 7 * 4;
-        } else if (interval === "monthly") {
-          rowsToFetch = 4 * 7 * 4;
-        }
-        const filteredData = mockData.slice(0, rowsToFetch);
-        setChartData(filteredData);
-      } catch (err) {
-        setError("Failed to load mock data");
-        console.error("Error loading mock data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchMockData();
-  }, [activeTab, interval]);
-
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner />
+      </div>
+    );
+  }
 
   const getFilteredData = (deviceId: string) => {
     return chartData.filter((point: any) => {
@@ -219,6 +211,7 @@ export default function ChartPage() {
           </button>
         </div>
       </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center h-64 col-span-full">
           <Spinner />
@@ -246,7 +239,6 @@ export default function ChartPage() {
                   style={{ height: "400px", width: "100%" }}
                 />
               </div>
-
               <div className="p-4 bg-white shadow rounded">
                 <ReactECharts
                   option={getChartOptions(getFilteredData("25_226"), "25_226")}

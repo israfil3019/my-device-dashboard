@@ -1,101 +1,105 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { useAuth } from "@/context/AuthContext";
-import apiClient from "@/utils/api";
+import Link from "next/link";
+import { useLogin } from "@/lib/hooks/useLogin";
 
-interface LoginFormInputs {
+type LoginFormInputs = {
   email: string;
   password: string;
-}
+};
 
-export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
+export default function LoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
-  const { register, handleSubmit } = useForm<LoginFormInputs>();
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      router.push("/dashboard");
-    }
-  }, [router]);
+  const { mutate: login, isPending, error } = useLogin();
 
-  const onSubmit = async (data: LoginFormInputs) => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.post("/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
-
-      if (![200, 201].includes(response.status)) {
-        throw new Error("Invalid credentials");
-      }
-      const { name, email, role, accessToken, company } = response.data.data;
-      localStorage.setItem("token", accessToken);
-      login({
-        name,
-        email,
-        role,
-        companyName: company?.name || "Device Dashboard",
-        accessToken,
-      });
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error("Login Error:", err);
-      setError(
-        err.response?.data?.message || "An error occurred. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
+    login(data, {
+      onSuccess: () => {
+        router.push("/dashboard");
+      },
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      {isLoading && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="text-white text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-lg">Logging in, please wait...</p>
-          </div>
-        </div>
-      )}
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bg-white p-6 rounded shadow-md max-w-sm w-full"
-      >
-        <h1 className="text-2xl font-bold mb-4">Login</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Email</label>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="email">
+            Email
+          </label>
           <input
-            {...register("email", { required: "Email is required" })}
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Invalid email address",
+              },
+            })}
             type="email"
-            className="w-full p-2 border rounded"
+            id="email"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your email"
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Password</label>
+
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="password">
+            Password
+          </label>
           <input
-            {...register("password", { required: "Password is required" })}
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
             type="password"
-            className="w-full p-2 border rounded"
+            id="password"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your password"
           />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.password.message}
+            </p>
+          )}
         </div>
+
+        {error && <p className="text-red-500 text-sm mt-2">{error.message}</p>}
+
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          disabled={isPending}
+          className={`w-full py-2 px-4 rounded-md text-white font-medium ${
+            isPending
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Login
+          {isPending ? "Signing in..." : "Sign In"}
         </button>
+
+        <div className="text-center mt-4">
+          <span className="text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-blue-600 hover:underline">
+              Register
+            </Link>
+          </span>
+        </div>
       </form>
     </div>
   );
