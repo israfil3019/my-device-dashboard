@@ -40,3 +40,9 @@ body {
 .ag-theme-alpine .ag-cell {
   text-align: center;
 }
+.ag-theme-alpine .ag-row-hover {
+  background-color: #f0f8ff !important; /* Light blue */
+}
+.ag-theme-alpine .ag-row-hover .ag-cell {
+  background-color: #f0f8ff !important; /* Light blue */
+}

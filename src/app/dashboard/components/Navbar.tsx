@@ -51,12 +51,12 @@ const Navbar: React.FC = () => {
     <nav className="py-3 bg-gray-800 text-white fixed top-0 left-0 right-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <h1 className="text-lg sm:text-xl font-bold truncate">
+        <h1 className="pl-4 text-lg sm:text-xl font-bold truncate">
           {user && user.company.name}
         </h1>
 
         {/* User Info and Actions */}
-        <div className="flex items-center gap-2 sm:gap-4 text-sm sm:text-base">
+        <div className="mr-4 flex items-center gap-2 sm:gap-4 text-sm sm:text-base">
           {user && (
             <p className="hidden sm:block truncate">
               Logged in as: <strong>{user.name}</strong>
