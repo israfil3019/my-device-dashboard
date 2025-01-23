@@ -52,16 +52,15 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <h1 className="pl-4 text-lg sm:text-xl font-bold truncate">
-          {user && user.company.name}
+          {user ? user.company.name : "Birre Soft"}
         </h1>
 
         {/* User Info and Actions */}
         <div className="mr-4 flex items-center gap-2 sm:gap-4 text-sm sm:text-base">
-          {user && (
-            <p className="hidden sm:block truncate">
-              Logged in as: <strong>{user.name}</strong>
-            </p>
-          )}
+          <p className="hidden sm:block truncate">
+            Logged in as:{" "}
+            <strong>{user?.name ? user.name : "Challenge 2025"}</strong>
+          </p>
           <button
             onClick={handleLogout}
             className="px-3 py-1 sm:px-4 sm:py-2 bg-red-600 rounded hover:bg-red-700"
