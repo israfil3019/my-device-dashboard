@@ -8,7 +8,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
-  const targetUrl = `${Url.BASE}/data/getArboliticsDataset`;
+  const targetUrl = Url.DATA;
 
   try {
     const { location_id, limit } = await req.json();

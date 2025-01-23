@@ -7,7 +7,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
-  const targetUrl = `${Url.BASE}/auth/login`;
+  const targetUrl = Url.LOGIN;
 
   try {
     const body = await req.json();
