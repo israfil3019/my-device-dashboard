@@ -6,26 +6,19 @@ import Filters from "./Filters";
 import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
 import { useChartData } from "@/lib/hooks/useChartData";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function ChartPage() {
   const [compareMode, setCompareMode] = useState<boolean>(false);
-  const { activeTab, interval, setInterval } = useTabsContext();
+  const { activeTab, setActiveTab, interval, setInterval } = useTabsContext();
 
-  const {
-    data: chartData = [],
-    isLoading,
-    isError,
-  } = useChartData(interval, activeTab);
+  const { data: chartData = [], isLoading, isError } = useChartData(interval);
 
   if (isError) {
     return (
       <div className="text-red-500 p-4 bg-white shadow rounded">
         <h2 className="text-lg font-semibold">Error</h2>
         <p>Failed to load chart data. Please try again later.</p>
-        <p className="text-sm">
-          Make sure your server is running and accessible.
-        </p>
       </div>
     );
   }
@@ -68,7 +61,9 @@ export default function ChartPage() {
 
     return {
       tooltip: { trigger: "axis" },
-      legend: { data: ["Temperature", "Humidity"] },
+      legend: {
+        data: [`${deviceId} Temperature`, `${deviceId} Humidity`],
+      },
       xAxis: {
         type: "category",
         data: xAxisData,
@@ -101,39 +96,33 @@ export default function ChartPage() {
 
   const getCombinedChartOptions = () => {
     const allTimestamps = [
-      ...new Set([
-        ...getFilteredData("25_225").map((point: any) => point.TMS),
-        ...getFilteredData("25_226").map((point: any) => point.TMS),
-      ]),
+      ...new Set(
+        chartData.map((point: any) => point.TMS) // Collect unique timestamps from all data
+      ),
     ].sort((a, b) => a - b);
 
-    const data225 = allTimestamps.map((timestamp) => {
-      const point = getFilteredData("25_225").find(
-        (p: any) => p.TMS === timestamp
-      );
-      return point ? point.tem1 : null;
+    const dateFormatter = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
     });
 
-    const humidity225 = allTimestamps.map((timestamp) => {
-      const point = getFilteredData("25_225").find(
-        (p: any) => p.TMS === timestamp
-      );
-      return point ? point.hum1 : null;
-    });
+    const formattedTimestamps = allTimestamps.map((timestamp) =>
+      dateFormatter.format(new Date(timestamp * 1000))
+    );
 
-    const data226 = allTimestamps.map((timestamp) => {
-      const point = getFilteredData("25_226").find(
-        (p: any) => p.TMS === timestamp
-      );
-      return point ? point.tem1 : null;
-    });
-
-    const humidity226 = allTimestamps.map((timestamp) => {
-      const point = getFilteredData("25_226").find(
-        (p: any) => p.TMS === timestamp
-      );
-      return point ? point.hum1 : null;
-    });
+    const createSeries = (
+      deviceId: string,
+      metric: "tem1" | "hum1",
+      name: string
+    ) => {
+      return allTimestamps.map((timestamp) => {
+        const point = chartData.find(
+          (p: any) => p.DID === deviceId && p.TMS === timestamp
+        );
+        return point ? point[metric] : null;
+      });
+    };
 
     return {
       tooltip: { trigger: "axis" },
@@ -147,16 +136,14 @@ export default function ChartPage() {
       },
       xAxis: {
         type: "category",
-        data: allTimestamps.map((timestamp) =>
-          new Date(timestamp * 1000).toLocaleString()
-        ),
+        data: formattedTimestamps,
       },
       yAxis: { type: "value" },
       series: [
         {
           name: "25_225 Temperature",
           type: "line",
-          data: data225,
+          data: createSeries("25_225", "tem1", "Temperature"),
           markPoint: {
             data: [
               { type: "max", name: "Max Temperature" },
@@ -167,12 +154,12 @@ export default function ChartPage() {
         {
           name: "25_225 Humidity",
           type: "line",
-          data: humidity225,
+          data: createSeries("25_225", "hum1", "Humidity"),
         },
         {
           name: "25_226 Temperature",
           type: "line",
-          data: data226,
+          data: createSeries("25_226", "tem1", "Temperature"),
           markPoint: {
             data: [
               { type: "max", name: "Max Temperature" },
@@ -183,7 +170,7 @@ export default function ChartPage() {
         {
           name: "25_226 Humidity",
           type: "line",
-          data: humidity226,
+          data: createSeries("25_226", "hum1", "Humidity"),
         },
       ],
     };
@@ -200,14 +187,23 @@ export default function ChartPage() {
         />
         <div className="mb-4 flex gap-4">
           <button
-            onClick={() => setCompareMode(!compareMode)}
+            onClick={() => {
+              setCompareMode((prevMode) => {
+                if (!prevMode) {
+                  if (activeTab !== "all") {
+                    setActiveTab("all");
+                  }
+                }
+                return !prevMode;
+              });
+            }}
             className={`px-4 py-2 rounded ${
               compareMode
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-800"
+                ? "bg-green-500 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }`}
           >
-            Compare Devices
+            Compare Mode
           </button>
         </div>
       </div>
