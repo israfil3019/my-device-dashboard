@@ -177,15 +177,15 @@ export default function ChartPage() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-2 sm:p-4">
       <Filters interval={interval} setInterval={setInterval} />
 
-      <div className="flex items-center justify-center gap-4 mb-4">
+      <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
         <DeviceTabs
           devices={["all", "25_225", "25_226"]}
           setCompareMode={setCompareMode}
         />
-        <div className="mb-4 flex gap-4">
+        <div className="mb-4 flex gap-2 sm:gap-4">
           <button
             onClick={() => {
               setCompareMode((prevMode) => {
@@ -197,7 +197,7 @@ export default function ChartPage() {
                 return !prevMode;
               });
             }}
-            className={`px-4 py-2 rounded ${
+            className={`px-3 py-2 sm:px-4 rounded text-sm sm:text-base ${
               compareMode
                 ? "bg-green-500 text-white"
                 : "bg-gray-200 text-gray-800 hover:bg-gray-300"

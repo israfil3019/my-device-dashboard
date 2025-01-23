@@ -15,7 +15,7 @@ export default function DeviceTabs({
   const { activeTab, setActiveTab } = useTabsContext();
 
   return (
-    <div className="mb-4 flex justify-center gap-4">
+    <div className="mb-4 flex flex-wrap justify-center gap-2 sm:gap-4">
       {devices.map((device) => (
         <button
           key={device}
@@ -23,10 +23,10 @@ export default function DeviceTabs({
             setActiveTab(device);
             setCompareMode(false);
           }}
-          className={`px-4 py-2 rounded ${
+          className={`px-3 py-2 sm:px-4 rounded text-sm sm:text-base ${
             activeTab === device
               ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-800"
+              : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
         >
           {device === "all" ? "All Devices" : device}

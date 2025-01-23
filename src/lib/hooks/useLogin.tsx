@@ -9,15 +9,12 @@ type AuthResponse = {
   data: {
     id: number;
     isActive: boolean;
-    createdAt: string; // ISO date string
-    updatedAt: string; // ISO date string
+    createdAt: string;
+    updatedAt: string;
     name: string;
-    password: string;
-    email: string;
     role: string;
     isSubscribed: boolean;
     lang: string;
-    passwordKey: string;
     company: object;
     accessToken: string;
   };
@@ -47,8 +44,7 @@ export const useLogin = () => {
     onSuccess: (response) => {
       console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, passwordKey, ...userData } = response.data; // Remove password and passwordKey from user data
-
+      const { ...userData } = response.data;
       localStorage.setItem("token", response.data.accessToken);
       queryClient.setQueryData<User>(["user"], userData);
     },

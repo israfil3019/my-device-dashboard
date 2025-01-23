@@ -80,7 +80,7 @@ export default function DataTable() {
   ];
 
   return (
-    <div className="p-4">
+    <div className="p-2 sm:p-4">
       <Filters interval={interval} setInterval={setInterval} />
       <DeviceTabs
         devices={["all", "25_225", "25_226"]}
