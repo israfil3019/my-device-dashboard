@@ -11,7 +11,7 @@ type FetchChartParams = {
   interval: string;
   activeTab: string;
 };
-
+const token = localStorage.getItem("token");
 const fetchChartData = async (
   params: FetchChartParams
 ): Promise<ChartData[]> => {
@@ -27,12 +27,14 @@ const fetchChartData = async (
 
   const response = await fetch("/api/proxy/data", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({}),
-    // body: JSON.stringify({
-    //   location_id: 10,
-    //   limit: rowsToFetch,
-    // }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      location_id: 10,
+      limit: rowsToFetch,
+    }),
   });
 
   if (!response.ok) {
