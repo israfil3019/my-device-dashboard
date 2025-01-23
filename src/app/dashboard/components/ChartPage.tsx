@@ -7,6 +7,7 @@ import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
 import { useChartData } from "@/lib/hooks/useChartData";
 import { useState } from "react";
+import { formatDateTime } from "@/lib/utils/dateFormatter";
 
 export default function ChartPage() {
   const [compareMode, setCompareMode] = useState<boolean>(false);
@@ -42,12 +43,7 @@ export default function ChartPage() {
     const sortedData = data.sort((a: any, b: any) => a.TMS - b.TMS);
 
     const groupedData = sortedData.reduce((acc: any, point: any) => {
-      const pointDate = new Date(point.TMS * 1000);
-      const formattedDate = new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-      }).format(pointDate);
+      const formattedDate = formatDateTime(point.TMS);
 
       if (!acc[formattedDate]) {
         acc[formattedDate] = { tem1: point.tem1, hum1: point.hum1 };
@@ -62,7 +58,10 @@ export default function ChartPage() {
     return {
       tooltip: { trigger: "axis" },
       legend: {
-        data: [`${deviceId} Temperature`, `${deviceId} Humidity`],
+        data: [
+          `${deviceId || "All"} Temperature`,
+          `${deviceId || "All"} Humidity`,
+        ],
       },
       xAxis: {
         type: "category",
@@ -93,7 +92,6 @@ export default function ChartPage() {
       ],
     };
   };
-
   const getCombinedChartOptions = () => {
     const allTimestamps = [
       ...new Set(

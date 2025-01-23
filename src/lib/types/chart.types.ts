@@ -5,4 +5,5 @@ export type ChartData = {
   hum1: number;
   solr?: number;
   wind?: number;
+  wins?: number;
 };

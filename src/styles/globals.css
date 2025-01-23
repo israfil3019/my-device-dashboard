@@ -23,3 +23,20 @@ body {
   padding: 0;
   min-height: 100vh;
 }
+
+.ag-theme-alpine .ag-header-cell {
+  text-align: center;
+  font-weight: bold;
+}
+.ag-header-viewport {
+  background-color: #f4f4f8;
+  border-bottom: 2px solid #ccc;
+}
+.ag-header-group-cell-label,
+.ag-header-cell-label {
+  justify-content: center;
+}
+
+.ag-theme-alpine .ag-cell {
+  text-align: center;
+}

@@ -10,6 +10,7 @@ import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
 import { useChartData } from "@/lib/hooks/useChartData";
 import { ChartData } from "@/lib/types/chart.types";
+import { formatDateTime } from "@/lib/utils/dateFormatter";
 
 export default function DataTable() {
   const { activeTab, interval, setInterval } = useTabsContext();
@@ -39,12 +40,14 @@ export default function DataTable() {
 
   const columnDefs: ColDef<ChartData>[] = [
     {
-      headerName: "Date & Time",
+      headerName: "Date/Time",
       field: "TMS",
       valueFormatter: (params: ValueFormatterParams<ChartData>) =>
-        new Date(params.value * 1000).toLocaleString(),
+        formatDateTime(params.value), // Use utility function
       sortable: true,
       filter: "agDateColumnFilter",
+      width: 130,
+      cellStyle: { "background-color": "aliceblue", "font-weight": "600" },
     },
     {
       headerName: "Device ID",
@@ -58,24 +61,67 @@ export default function DataTable() {
       field: "tem1",
       sortable: true,
       filter: true,
+      width: 180,
+      cellStyle: (params) => {
+        if (params.value >= 30 && params.value <= 50) {
+          return { fontWeight: 600, backgroundColor: "rgba(255, 0, 0, 0.20)" };
+        } else if (params.value > 50) {
+          return { fontWeight: 600, backgroundColor: "rgba(255, 0, 0, 0.35)" };
+        } else {
+          return { fontWeight: 600, backgroundColor: "aliceblue" };
+        }
+      },
     },
     {
       headerName: "Humidity (%)",
       field: "hum1",
       sortable: true,
       filter: true,
+      width: 180,
+      cellStyle: { "font-weight": "600" },
     },
     {
       headerName: "Solar Radiation",
       field: "solr",
       sortable: true,
       filter: true,
+      width: 180,
+      cellStyle: { "background-color": "aliceblue" },
+    },
+    {
+      headerName: "Wind Direction",
+      field: "wins",
+      cellRenderer: (params: any) => {
+        const direction = params.value;
+        const rotation = direction || 0;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              style={{ fontSize: "16px", transform: `rotate(${rotation}deg)` }}
+            >
+              ↑
+            </span>
+          </div>
+        );
+      },
+      sortable: false,
+      filter: false,
+      width: 140,
     },
     {
       headerName: "Wind Speed (m/s)",
       field: "wind",
       sortable: true,
       filter: true,
+      width: 180,
+      cellStyle: { "background-color": "aliceblue" },
     },
   ];
 
