@@ -6,47 +6,64 @@ type LoginCredentials = {
 };
 
 type AuthResponse = {
-  data: {
+  success: boolean;
+  message: string;
+  user?: {
     id: number;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
     name: string;
     role: string;
-    isSubscribed: boolean;
-    lang: string;
-    company: object;
-    accessToken: string;
+    company: { name: string };
   };
-};
-
-type User = Omit<AuthResponse["data"], "password" | "passwordKey">;
-
-const loginUser = async (
-  credentials: LoginCredentials
-): Promise<AuthResponse> => {
-  const response = await fetch("/api/proxy/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(credentials),
-    credentials: "include", // Include cookies in requests
-  });
-
-  if (!response.ok) throw new Error("Authentication failed");
-  return response.json();
 };
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<AuthResponse, Error, LoginCredentials>({
+  return useMutation<
+    {
+      success: boolean;
+      message: string;
+      user?: {
+        id: number;
+        name: string;
+        role: string;
+        company: { name: string };
+      };
+    },
+    Error,
+    LoginCredentials
+  >({
     mutationKey: ["auth", "login"],
-    mutationFn: loginUser,
-    onSuccess: (response) => {
-      const { ...userData } = response.data;
+    mutationFn: async (credentials: LoginCredentials) => {
+      const response = await fetch("/api/proxy/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+        credentials: "include", // Include cookies in the request
+      });
 
-      // Store user data in query cache (token is already in cookies)
-      queryClient.setQueryData<User>(["user"], userData);
+      if (!response.ok) {
+        throw new Error("Authentication failed");
+      }
+
+      const responseData: AuthResponse = await response.json();
+
+      if (!responseData || responseData.success !== true) {
+        throw new Error("Invalid response structure from API");
+      }
+
+      return responseData;
+    },
+    onSuccess: (response) => {
+      if (response?.success) {
+        console.log("Login successful:", response.message);
+
+        if (response.user) {
+          queryClient.setQueryData(["user"], response.user);
+        }
+      } else {
+        console.error("Unexpected response structure:", response);
+      }
     },
     onError: (error) => {
       console.error("Login error:", error.message);

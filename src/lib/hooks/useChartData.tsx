@@ -8,8 +8,6 @@ type FetchChartParams = {
 const fetchChartData = async (
   params: FetchChartParams
 ): Promise<ChartData[]> => {
-  const token = localStorage.getItem("token");
-
   // Map intervals to fetch limits
   const limitMap: { [key: string]: number } = {
     daily: 48,
@@ -23,12 +21,12 @@ const fetchChartData = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       location_id: 10,
       limit: rowsToFetch,
     }),
+    credentials: "include", // Include cookies in the request
   });
 
   if (!response.ok) {
