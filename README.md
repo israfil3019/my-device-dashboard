@@ -64,9 +64,7 @@ src/
 │   ├── api/                   # API route handlers (if any)
 │   ├── dashboard/             # Dashboard pages and components
 │   │   ├── components/        # Subcomponents like Tabs, Navbar, etc.
-│   │   │   ├── page.test.tsx  # Unit tests for dashboard components
-│   │   │   └── page.tsx       # Main page for dashboard components
-│   │   └── page.tsx           # Main dashboard page
+│   │   ├── page.tsx           # Main page for dashboard components
 │   │   └── page.test.tsx      # Unit tests for the dashboard page
 │   ├── loading/               # Loading indicator components
 │   ├── login/                 # Login page and related tests
@@ -78,10 +76,10 @@ src/
 ├── context/
 │   └── TabsContext.tsx        # Context for managing active tabs and intervals
 ├── lib/
-│   ├── constants/             # Custom hooks (e.g., useLogin, useChartData)
-│   ├── hooks/                 # Enums (e.g., url)
+│   ├── constants/             # Enum for managing application URL constants
+│   ├── hooks/                 # Custom hooks (e.g., useLogin, useChartData)
 │   ├── providers/             # Providers for global state (e.g., react-query)
-│   ├── types/                 # Types for pages (e.g., dashboard/chart)
+│   ├── types/                 # Type definitions for chart data structure
 │   └── utils/                 # Utility functions (e.g., date formatters)
 ├── public/                    # Public assets (e.g., images, icons)
 │
@@ -96,10 +94,10 @@ src/
 ### Local Environment Setup
 
 1. **Environment Variables**:
-   Create a `.env.local` file in the root directory with the following content:
+   Create a `.env` file in the root directory with the following content:
 
    ```env
-   NEXT_PUBLIC_API_BASE_URL=https://api.example.com
+   NEXT_PUBLIC_API_BASE_URL=https://staging-api.arbolitics.com
    ```
 
 2. **Run the App**:

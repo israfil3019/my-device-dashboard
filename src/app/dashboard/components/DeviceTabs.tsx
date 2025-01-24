@@ -5,7 +5,7 @@ import { useTabsContext } from "@/context/TabsContext";
 
 interface DeviceTabsProps {
   devices: string[];
-  setCompareMode: (value: boolean) => void; // Add setCompareMode prop
+  setCompareMode: (value: boolean) => void; // For exit compare mode
 }
 
 export default function DeviceTabs({

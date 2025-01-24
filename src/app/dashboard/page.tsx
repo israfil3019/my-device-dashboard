@@ -5,7 +5,7 @@ import DataTable from "./components/DataTable";
 import ChartPage from "./components/ChartPage";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { TabsProvider } from "@/context/TabsContext";
+import { TabsProvider } from "@/context/TabsContext"; // Use it to prevent unnecessary api calls
 
 export default function DashboardPage() {
   const tabs = [

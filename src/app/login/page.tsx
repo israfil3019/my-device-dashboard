@@ -24,7 +24,6 @@ export default function LoginForm() {
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
     login(data, {
       onSuccess: () => {
-        console.log("onSuccess triggered"); // Debug log
         setIsRouting(true);
         router.push("/dashboard");
       },

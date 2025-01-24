@@ -104,7 +104,7 @@ export default function DataTable() {
       sortable: true,
       filter: true,
       width: 180,
-      cellStyle: { "background-color": "aliceblue" },
+      cellStyle: { backgroundColor: "aliceblue" },
     },
   ];
 
