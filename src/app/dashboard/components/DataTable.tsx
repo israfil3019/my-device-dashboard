@@ -21,23 +21,6 @@ export default function DataTable() {
     (point) => activeTab === "all" || point.DID === activeTab
   );
 
-  if (isError) {
-    return (
-      <div className="text-red-500 p-4 bg-white shadow rounded">
-        <h2 className="text-lg font-semibold">Error</h2>
-        <p>Failed to load table data. Please try again later.</p>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner />
-      </div>
-    );
-  }
-
   const columnDefs: ColDef<ChartData>[] = [
     {
       headerName: "Date/Time",
@@ -132,19 +115,30 @@ export default function DataTable() {
         devices={["all", "25_225", "25_226"]}
         setCompareMode={() => {}}
       />
-      <div
-        className="ag-theme-alpine mt-4"
-        style={{ height: 600, width: "100%" }}
-      >
-        <AgGridReact<ChartData>
-          rowData={rowData}
-          columnDefs={columnDefs}
-          defaultColDef={{
-            sortable: true,
-            filter: true,
-          }}
-        />
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64 col-span-full">
+          <Spinner />
+        </div>
+      ) : isError ? (
+        <div className="text-red-500 p-4 bg-white shadow rounded">
+          <h2 className="text-lg font-semibold">Error</h2>
+          <p>Failed to load chart data. Please try again later.</p>
+        </div>
+      ) : (
+        <div
+          className="ag-theme-alpine mt-4"
+          style={{ height: 600, width: "100%" }}
+        >
+          <AgGridReact<ChartData>
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={{
+              sortable: true,
+              filter: true,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

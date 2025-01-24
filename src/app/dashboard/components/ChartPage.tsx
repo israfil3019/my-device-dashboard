@@ -15,23 +15,6 @@ export default function ChartPage() {
 
   const { data: chartData = [], isLoading, isError } = useChartData(interval);
 
-  if (isError) {
-    return (
-      <div className="text-red-500 p-4 bg-white shadow rounded">
-        <h2 className="text-lg font-semibold">Error</h2>
-        <p>Failed to load chart data. Please try again later.</p>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner />
-      </div>
-    );
-  }
-
   const getFilteredData = (deviceId: string) => {
     return chartData.filter((point: any) => {
       const isDeviceMatch = deviceId === "all" || point.DID === deviceId;
@@ -209,6 +192,11 @@ export default function ChartPage() {
       {isLoading ? (
         <div className="flex items-center justify-center h-64 col-span-full">
           <Spinner />
+        </div>
+      ) : isError ? (
+        <div className="text-red-500 p-4 bg-white shadow rounded">
+          <h2 className="text-lg font-semibold">Error</h2>
+          <p>Failed to load chart data. Please try again later.</p>
         </div>
       ) : compareMode ? (
         <div className="p-4 bg-white shadow rounded">
