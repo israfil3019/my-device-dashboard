@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { Client } from "undici";
 import logger from "@/lib/hooks/logger";
+import { parse } from "cookie"; // To parse cookies manually
 
 export async function POST(
   req: NextRequest,
@@ -12,12 +13,16 @@ export async function POST(
 
   try {
     const { location_id, limit } = await req.json();
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
+
+    // Get token from cookies
+    const cookies = req.headers.get("cookie");
+    const parsedCookies = cookies ? parse(cookies) : {};
+    const token = parsedCookies.authToken;
 
     if (!token) {
       return NextResponse.json(
         { error: "Missing ACCESS_TOKEN" },
-        { status: 400 }
+        { status: 401 } // Unauthorized
       );
     }
 
