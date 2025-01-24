@@ -1,13 +1,13 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import DeviceTabs from "./DeviceTabs";
+import { useState } from "react";
 import Filters from "./Filters";
+import DeviceTabs from "./DeviceTabs";
 import { useTabsContext } from "@/context/TabsContext";
 import Spinner from "@/app/loading/Spinner";
 import { useChartData } from "@/lib/hooks/useChartData";
-import { useState } from "react";
 import { formatDateTime } from "@/lib/utils/dateFormatter";
+import EChartWrapper from "@/lib/utils/EChartWrappers";
 
 export default function ChartPage() {
   const [compareMode, setCompareMode] = useState<boolean>(false);
@@ -75,11 +75,10 @@ export default function ChartPage() {
       ],
     };
   };
+
   const getCombinedChartOptions = () => {
     const allTimestamps = [
-      ...new Set(
-        chartData.map((point: any) => point.TMS) // Collect unique timestamps from all data
-      ),
+      ...new Set(chartData.map((point: any) => point.TMS)),
     ].sort((a, b) => a - b);
 
     const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -92,11 +91,7 @@ export default function ChartPage() {
       dateFormatter.format(new Date(timestamp * 1000))
     );
 
-    const createSeries = (
-      deviceId: string,
-      metric: "tem1" | "hum1",
-      name: string
-    ) => {
+    const createSeries = (deviceId: string, metric: "tem1" | "hum1") => {
       return allTimestamps.map((timestamp) => {
         const point = chartData.find(
           (p: any) => p.DID === deviceId && p.TMS === timestamp
@@ -124,34 +119,22 @@ export default function ChartPage() {
         {
           name: "25_225 Temperature",
           type: "line",
-          data: createSeries("25_225", "tem1", "Temperature"),
-          markPoint: {
-            data: [
-              { type: "max", name: "Max Temperature" },
-              { type: "min", name: "Min Temperature" },
-            ],
-          },
+          data: createSeries("25_225", "tem1"),
         },
         {
           name: "25_225 Humidity",
           type: "line",
-          data: createSeries("25_225", "hum1", "Humidity"),
+          data: createSeries("25_225", "hum1"),
         },
         {
           name: "25_226 Temperature",
           type: "line",
-          data: createSeries("25_226", "tem1", "Temperature"),
-          markPoint: {
-            data: [
-              { type: "max", name: "Max Temperature" },
-              { type: "min", name: "Min Temperature" },
-            ],
-          },
+          data: createSeries("25_226", "tem1"),
         },
         {
           name: "25_226 Humidity",
           type: "line",
-          data: createSeries("25_226", "hum1", "Humidity"),
+          data: createSeries("25_226", "hum1"),
         },
       ],
     };
@@ -199,13 +182,7 @@ export default function ChartPage() {
           <p>Failed to load chart data. Please try again later.</p>
         </div>
       ) : compareMode ? (
-        <div className="p-4 bg-white shadow rounded">
-          <ReactECharts
-            option={getCombinedChartOptions()}
-            style={{ height: "400px", width: "100%" }}
-            data-testid="echarts-mock"
-          />
-        </div>
+        <EChartWrapper option={getCombinedChartOptions()} />
       ) : (
         <div
           className={`grid ${
@@ -216,29 +193,17 @@ export default function ChartPage() {
         >
           {activeTab === "all" ? (
             <>
-              <div className="p-4 bg-white shadow rounded">
-                <ReactECharts
-                  option={getChartOptions(getFilteredData("25_225"), "25_225")}
-                  style={{ height: "400px", width: "100%" }}
-                  data-testid="echarts-mock"
-                />
-              </div>
-              <div className="p-4 bg-white shadow rounded">
-                <ReactECharts
-                  option={getChartOptions(getFilteredData("25_226"), "25_226")}
-                  style={{ height: "400px", width: "100%" }}
-                  data-testid="echarts-mock"
-                />
-              </div>
+              <EChartWrapper
+                option={getChartOptions(getFilteredData("25_225"), "25_225")}
+              />
+              <EChartWrapper
+                option={getChartOptions(getFilteredData("25_226"), "25_226")}
+              />
             </>
           ) : (
-            <div className="p-4 bg-white shadow rounded">
-              <ReactECharts
-                option={getChartOptions(getFilteredData(activeTab), activeTab)}
-                style={{ height: "400px", width: "100%" }}
-                data-testid="echarts-mock"
-              />
-            </div>
+            <EChartWrapper
+              option={getChartOptions(getFilteredData(activeTab), activeTab)}
+            />
           )}
         </div>
       )}
