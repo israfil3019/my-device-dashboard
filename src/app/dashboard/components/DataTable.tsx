@@ -122,7 +122,7 @@ export default function DataTable() {
       ) : isError ? (
         <div className="text-red-500 p-4 bg-white shadow rounded">
           <h2 className="text-lg font-semibold">Error</h2>
-          <p>Failed to load chart data. Please try again later.</p>
+          <p>Failed to load table data. Please try again later.</p>
         </div>
       ) : (
         <div
