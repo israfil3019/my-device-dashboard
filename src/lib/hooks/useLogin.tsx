@@ -42,7 +42,7 @@ export const useLogin = () => {
     mutationKey: ["auth", "login"],
     mutationFn: loginUser,
     onSuccess: (response) => {
-      console.log(response);
+      // console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { ...userData } = response.data;
       localStorage.setItem("token", response.data.accessToken);

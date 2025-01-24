@@ -2,6 +2,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import { useLogin } from "@/lib/hooks/useLogin";
 
 type LoginFormInputs = {
@@ -11,6 +12,7 @@ type LoginFormInputs = {
 
 export default function LoginForm() {
   const router = useRouter();
+  const [isRouting, setIsRouting] = useState(false); // Add a state for routing
   const {
     register,
     handleSubmit,
@@ -22,6 +24,7 @@ export default function LoginForm() {
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
     login(data, {
       onSuccess: () => {
+        setIsRouting(true); // Start routing
         router.push("/dashboard");
       },
     });
@@ -90,14 +93,14 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || isRouting} // Disable when pending or routing
             className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-              isPending
+              isPending || isRouting
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {isPending ? "Signing in..." : "Sign In"}
+            {isPending || isRouting ? "Signing in..." : "Sign In"}
           </button>
 
           <div className="text-center mt-4">
