@@ -10,4 +10,7 @@ module.exports = createJestConfig({
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
   },
   moduleFileExtensions: ["js", "jsx", "ts", "tsx"],
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1", // Resolve alias @ to src
+  },
 });
