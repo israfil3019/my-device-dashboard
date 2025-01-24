@@ -29,6 +29,7 @@ const loginUser = async (
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),
+    credentials: "include", // Include cookies in requests
   });
 
   if (!response.ok) throw new Error("Authentication failed");
@@ -42,10 +43,9 @@ export const useLogin = () => {
     mutationKey: ["auth", "login"],
     mutationFn: loginUser,
     onSuccess: (response) => {
-      // console.log(response);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { ...userData } = response.data;
-      localStorage.setItem("token", response.data.accessToken);
+
+      // Store user data in query cache (token is already in cookies)
       queryClient.setQueryData<User>(["user"], userData);
     },
     onError: (error) => {

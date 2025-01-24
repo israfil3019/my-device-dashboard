@@ -2,6 +2,7 @@ import { Url } from "@/lib/constants/url.enum";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import logger from "@/lib/hooks/logger";
+import { serialize } from "cookie";
 
 export async function POST(
   req: NextRequest,
@@ -11,7 +12,6 @@ export async function POST(
 
   try {
     const body = await req.json();
-    // logger.info("Request body received", { body });
 
     const response = await fetch(targetUrl, {
       method: "POST",
@@ -22,12 +22,34 @@ export async function POST(
     });
 
     const data = await response.json();
-    // logger.info("Response received from target API", {
-    //   status: response.status,
-    //   response: data,
-    // });
+    logger.info("Response received from target API", {
+      status: response.status,
+      response: data,
+    });
 
-    return NextResponse.json(data, { status: response.status });
+    if (response.ok) {
+      const token = data.data.accessToken;
+
+      // Set the token as an HTTP-only cookie
+      const cookie = serialize("authToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+      });
+
+      const nextResponse = NextResponse.json(
+        { success: true, message: "Login successful" },
+        { status: response.status }
+      );
+      nextResponse.headers.set("Set-Cookie", cookie);
+      return nextResponse;
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Invalid credentials" },
+      { status: response.status }
+    );
   } catch (error) {
     if (error instanceof Error) {
       logger.error("Proxy error", {
