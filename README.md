@@ -1,5 +1,9 @@
 # Device Dashboard
 
+### Branch Overview
+- Master Branch: The stable version of the project.
+- Feature Branch ([feature/secure-login-with-cookie](https://github.com/israfil3019/my-device-dashboard/tree/feature/secure-login-with-cookie)): Contains updates to the charting functionality and token management.
+
 ## Overview
 
 **Device Dashboard** is a web-based application built using **Next.js**, **React**, and **Tailwind CSS**. It offers dynamic data visualization and tabular data management for device metrics like temperature, humidity, and more. The application provides seamless navigation, secure login functionality, and a responsive user interface for monitoring device data.
