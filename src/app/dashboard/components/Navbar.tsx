@@ -15,51 +15,55 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Fetch user from React Query or fallback to localStorage or default
-  const user = useQuery<User>({
+  // Fetch user details securely
+  const { data: user } = useQuery<User>({
     queryKey: ["user"],
-    queryFn: async () => {
+    queryFn: async (): Promise<User> => {
+      // Fetch data only if not cached
       const cachedUser = queryClient.getQueryData<User>(["user"]);
-      if (cachedUser) {
-        return cachedUser;
+      if (cachedUser) return cachedUser;
+
+      const response = await fetch("/api/proxy/me", {
+        method: "GET",
+        credentials: "include", // Include cookies in request
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user");
       }
 
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        queryClient.setQueryData(["user"], parsedUser); // Sync to React Query cache
-        return parsedUser;
-      }
-
-      return {
-        id: 0,
-        name: "Challenge 2025",
-        email: "guest@example.com",
-        company: { name: "Birre Soft" },
-      };
+      const userData = await response.json();
+      queryClient.setQueryData(["user"], userData); // Cache the user data
+      return userData;
     },
     staleTime: Infinity, // Prevent automatic refetch
-  }).data;
+    retry: false, // Disable retry to avoid unnecessary requests
+  });
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    // Invalidate session via API
+    await fetch("/api/proxy/logout", {
+      method: "POST",
+      credentials: "include", // Include cookies in request
+    });
+
+    // Properly remove user data
+    queryClient.removeQueries({ queryKey: ["user"] }); // Use the correct syntax
     router.push("/login");
   };
-
+  console.log("Fetched user data:", user);
   return (
     <nav className="py-3 bg-gray-800 text-white fixed top-0 left-0 right-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <h1 className="pl-4 text-lg sm:text-xl font-bold truncate">
-          {user ? user.company.name : "Birre Soft"}
+          {user?.company?.name || "Birre Soft"}
         </h1>
 
         {/* User Info and Actions */}
         <div className="mr-4 flex items-center gap-2 sm:gap-4 text-sm sm:text-base">
           <p className="hidden sm:block truncate">
-            Logged in as:{" "}
-            <strong>{user?.name ? user.name : "Challenge 2025"}</strong>
+            Logged in as: <strong>{user?.name || "Challenge 2025"}</strong>
           </p>
           <button
             onClick={handleLogout}

@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
         id: 1,
         name: "challenge2025",
         email: "challenge2025@arbolitics.com",
+        company: { name: "Birre Soft" },
       },
     });
   } catch (error) {
