@@ -215,6 +215,7 @@ export default function ChartPage() {
           <ReactECharts
             option={getCombinedChartOptions()}
             style={{ height: "400px", width: "100%" }}
+            data-testid="echarts-mock"
           />
         </div>
       ) : (
@@ -231,12 +232,14 @@ export default function ChartPage() {
                 <ReactECharts
                   option={getChartOptions(getFilteredData("25_225"), "25_225")}
                   style={{ height: "400px", width: "100%" }}
+                  data-testid="echarts-mock"
                 />
               </div>
               <div className="p-4 bg-white shadow rounded">
                 <ReactECharts
                   option={getChartOptions(getFilteredData("25_226"), "25_226")}
                   style={{ height: "400px", width: "100%" }}
+                  data-testid="echarts-mock"
                 />
               </div>
             </>
@@ -245,6 +248,7 @@ export default function ChartPage() {
               <ReactECharts
                 option={getChartOptions(getFilteredData(activeTab), activeTab)}
                 style={{ height: "400px", width: "100%" }}
+                data-testid="echarts-mock"
               />
             </div>
           )}
