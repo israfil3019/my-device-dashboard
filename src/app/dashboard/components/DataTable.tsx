@@ -30,7 +30,7 @@ export default function DataTable() {
       sortable: true,
       filter: "agDateColumnFilter",
       width: 130,
-      cellStyle: { "background-color": "aliceblue", "font-weight": "600" },
+      cellStyle: { backgroundColor: "aliceblue", fontWeight: "600" },
     },
     {
       headerName: "Device ID",
@@ -61,7 +61,7 @@ export default function DataTable() {
       sortable: true,
       filter: true,
       width: 180,
-      cellStyle: { "font-weight": "600" },
+      cellStyle: { fontWeight: "600" },
     },
     {
       headerName: "Solar Radiation",
@@ -69,7 +69,7 @@ export default function DataTable() {
       sortable: true,
       filter: true,
       width: 180,
-      cellStyle: { "background-color": "aliceblue" },
+      cellStyle: { backgroundColor: "aliceblue" },
     },
     {
       headerName: "Wind Direction",

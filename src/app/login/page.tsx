@@ -12,7 +12,7 @@ type LoginFormInputs = {
 
 export default function LoginForm() {
   const router = useRouter();
-  const [isRouting, setIsRouting] = useState(false); // Add a state for routing
+  const [isRouting, setIsRouting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -24,12 +24,12 @@ export default function LoginForm() {
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
     login(data, {
       onSuccess: () => {
-        setIsRouting(true); // Start routing
+        console.log("onSuccess triggered"); // Debug log
+        setIsRouting(true);
         router.push("/dashboard");
       },
     });
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
@@ -48,9 +48,12 @@ export default function LoginForm() {
                   message: "Invalid email address",
                 },
               })}
-              type="email"
               id="email"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                errors.email
+                  ? "border-red-500 focus:ring-red-500"
+                  : "focus:ring-blue-500"
+              }`}
               placeholder="Enter your email"
             />
             {errors.email && (
@@ -77,7 +80,11 @@ export default function LoginForm() {
               })}
               type="password"
               id="password"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                errors.password
+                  ? "border-red-500 focus:ring-red-500"
+                  : "focus:ring-blue-500"
+              }`}
               placeholder="Enter your password"
             />
             {errors.password && (
@@ -93,7 +100,7 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={isPending || isRouting} // Disable when pending or routing
+            disabled={isPending || isRouting}
             className={`w-full py-2 px-4 rounded-md text-white font-medium ${
               isPending || isRouting
                 ? "bg-gray-400 cursor-not-allowed"
